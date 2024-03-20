@@ -70,14 +70,28 @@ sys_sleep(void)
 }
 
 
-#ifdef LAB_PGTBL
 int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 va, addr;
+  int num;
+  argaddr(0, &va);
+  argint(1, &num);
+  argaddr(2, &addr);
+  if (num > 32) {
+    return -1;
+  }
+  struct proc *p = myproc();
+  int bit = 0;
+  for (int i = 0; i < num; ++i) {
+    bit |= uvmpgaccess(p->pagetable, va + i * PGSIZE) << i;
+  }
+  if (copyout(p->pagetable, addr, (char *)&bit, sizeof(bit)) < 0) {
+    return -1;
+  }
   return 0;
 }
-#endif
 
 uint64
 sys_kill(void)
